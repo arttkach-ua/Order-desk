@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-container
+    restart: always
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    networks:
+      - springboot-postgres-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+#  app:
+#    build: .
+#    container_name: springboot-app
+#    depends_on:
+#      - postgres
+#    ports:
+#      - "8080:8080"
+#    networks:
+#      - springboot-postgres-network
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydatabase
+#      SPRING_DATASOURCE_USERNAME: postgres
+#      SPRING_DATASOURCE_PASSWORD: postgrespassword
+
+networks:
+  springboot-postgres-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
