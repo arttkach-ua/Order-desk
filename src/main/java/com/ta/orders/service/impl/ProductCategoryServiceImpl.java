@@ -6,10 +6,14 @@ import com.ta.orders.model.ProductCategory;
 import com.ta.orders.repository.ProductCategoryRepository;
 import com.ta.orders.service.ProductCategoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @RequiredArgsConstructor
+@Service
+@Slf4j
 public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     private final ProductCategoryRepository productCategoryRepository;

@@ -11,12 +11,12 @@ import java.util.List;
 @RequestMapping("/api/v1/product-categories")
 @CrossOrigin
 @RequiredArgsConstructor
-public class ProductCategoriesRepository {
+public class ProductCategoriesController {
 
     private final ProductCategoryService productCategoryService;
 
     @PostMapping
-    public ProductCategoryDto createCategory(ProductCategoryDto productCategoryDto) {
+    public ProductCategoryDto createCategory(@RequestBody ProductCategoryDto productCategoryDto) {
         return productCategoryService.create(productCategoryDto);
     }
 
