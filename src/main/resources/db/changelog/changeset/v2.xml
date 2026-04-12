@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="alter products image_url to text" author="artem.tkach" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="products" columnName="image_url"/>
+        </preConditions>
+        <sql>
+            ALTER TABLE products
+            ALTER COLUMN image_url TYPE text USING image_url::text;
+        </sql>
+    </changeSet>
+
+    <changeSet id="alter product_categories image_url to text" author="artem.tkach" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="product_categories" columnName="image_url"/>
+        </preConditions>
+        <sql>
+            ALTER TABLE product_categories
+            ALTER COLUMN image_url TYPE text USING image_url::text;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
+

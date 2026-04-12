@@ -32,6 +32,6 @@ public class Product {
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime creationTime;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url", columnDefinition = "text")
     private String imageUrl;
 }
