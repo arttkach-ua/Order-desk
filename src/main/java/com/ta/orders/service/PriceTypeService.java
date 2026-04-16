@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface PriceTypeService {
 
-    PriceType create();
+    PriceType create(PriceType priceType);
 
     List<PriceType> getAll();
 
-    PriceType getClientsPriceTypeOrDefault();
+    PriceType getClientsPriceTypeOrDefault(long ClientId);
 }
