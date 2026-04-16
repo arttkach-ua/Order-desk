@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.ta.orders.service.ProductCategoryServiceTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-04-16T18:26:47" hostname="ASUS-LAPTOP" time="1.88">
+  <properties/>
+  <testcase name="shouldReturnProductCategoryDtoWithCorrectData()" classname="com.ta.orders.service.ProductCategoryServiceTest" time="1.771"/>
+  <testcase name="shouldPreserveCategoryImageUrlWhenCreating()" classname="com.ta.orders.service.ProductCategoryServiceTest" time="0.014"/>
+  <testcase name="shouldCallRepositorySaveMethodOnce()" classname="com.ta.orders.service.ProductCategoryServiceTest" time="0.019"/>
+  <testcase name="shouldMapDtoToEntityBeforeSaving()" classname="com.ta.orders.service.ProductCategoryServiceTest" time="0.007"/>
+  <testcase name="shouldPreserveCategoryNameWhenCreating()" classname="com.ta.orders.service.ProductCategoryServiceTest" time="0.006"/>
+  <testcase name="shouldGetAllProductCategories()" classname="com.ta.orders.service.ProductCategoryServiceTest" time="0.019"/>
+  <testcase name="shouldCreateProductCategory()" classname="com.ta.orders.service.ProductCategoryServiceTest" time="0.01"/>
+  <testcase name="shouldCallRepositoryFindAllMethodOnce()" classname="com.ta.orders.service.ProductCategoryServiceTest" time="0.003"/>
+  <testcase name="shouldMapAllEntitiesToDtos()" classname="com.ta.orders.service.ProductCategoryServiceTest" time="0.005"/>
+  <testcase name="shouldReturnEmptyListWhenNoProductCategories()" classname="com.ta.orders.service.ProductCategoryServiceTest" time="0.003"/>
+  <testcase name="shouldReturnMultipleCategoriesInCorrectOrder()" classname="com.ta.orders.service.ProductCategoryServiceTest" time="0.006"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
