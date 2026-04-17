@@ -25,5 +25,22 @@
         </sql>
     </changeSet>
 
+    <changeSet id="create table price_types" author="artem.tkach" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="price_types"/>
+            </not>
+        </preConditions>
+        <createTable tableName="price_types">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
 
