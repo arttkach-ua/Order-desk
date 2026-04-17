@@ -1,0 +1,40 @@
+name: Build on Comment
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  build:
+    if: github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check trigger
+        id: check
+        run: |
+          body="${{ github.event.comment.body }}"
+          if echo "$body" | grep -i "build this please" > /dev/null; then
+            echo "trigger=true" >> $GITHUB_OUTPUT
+          else
+            echo "trigger=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Fail if not triggered
+        if: steps.check.outputs.trigger == 'false'
+        run: exit 1
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Build with Gradle
+        run: ./gradlew build
