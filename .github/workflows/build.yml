@@ -27,6 +27,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.issue.pull_request.head.sha }}
+          fetch-depth: 0
 
       - name: Debug branch
         run: git branch --show-current
@@ -47,8 +48,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
+      - name: Fix gradlew (permissions + line endings)
+        run: |
+          sed -i 's/\r$//' gradlew
+          chmod +x gradlew
+          ls -la gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew build
+      - name: Verify gradlew
+        run: file gradlew
+
+      - name: Build with Gradle (safe execution)
+        run: bash ./gradlew build
