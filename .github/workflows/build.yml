@@ -8,6 +8,7 @@ jobs:
   build:
     if: github.event.issue.pull_request
     runs-on: ubuntu-latest
+
     steps:
       - name: Check trigger
         id: check
@@ -18,15 +19,25 @@ jobs:
           else
             echo "trigger=false" >> $GITHUB_OUTPUT
           fi
-      - name: Fail if not triggered
-        if: steps.check.outputs.trigger == 'false'
-        run: exit 1
+
+      - name: Stop if not triggered
+        if: steps.check.outputs.trigger != 'true'
+        run: exit 0
+
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.issue.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Debug branch
+        run: git branch --show-current
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
@@ -36,5 +47,18 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      - name: Build with Gradle
-        run: ./gradlew build
+
+      - name: Fix gradlew (permissions + line endings)
+        run: |
+          sed -i 's/\r$//' gradlew
+          chmod +x gradlew
+          ls -la gradlew
+
+      - name: Verify gradlew
+        run: file gradlew
+
+      - name: Build with Gradle (force safe mode)
+        run: |
+          chmod 777 gradlew
+          sed -i 's/\r$//' gradlew
+          sh gradlew build
