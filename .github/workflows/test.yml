@@ -1,37 +1,38 @@
-name: Test on Comment
+name: Test
 
 on:
-  issue_comment:
-    types: [created]
+  pull_request:
 
 jobs:
   test:
-    if: github.event.issue.pull_request
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: mydatabase
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - name: Check trigger
-        id: check
-        run: |
-          body="${{ github.event.comment.body }}"
-          if echo "$body" | grep -i "run unit tests please" > /dev/null; then
-            echo "trigger=true" >> $GITHUB_OUTPUT
-          else
-            echo "trigger=false" >> $GITHUB_OUTPUT
-          fi
-      - name: Fail if not triggered
-        if: steps.check.outputs.trigger == 'false'
-        run: exit 1
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.issue.pull_request.head.sha }}
 
       - name: Debug branch
         run: git branch --show-current
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
@@ -41,7 +42,9 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
+
       - name: Run tests with Gradle
         run: ./gradlew test
