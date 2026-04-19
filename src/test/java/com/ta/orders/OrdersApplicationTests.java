@@ -1,10 +1,8 @@
 package com.ta.orders;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class OrdersApplicationTests {
+class OrdersApplicationTests extends AbstractIntegrationTest {
 
 	@Test
 	void contextLoads() {

@@ -1,15 +1,23 @@
-name: Test on Comment
+name: Test
 
 on:
+  pull_request:
+    branches: [ main, master, develop ]
+  push:
+    branches: [ main, master, develop ]
   issue_comment:
     types: [created]
 
 jobs:
   test:
-    if: github.event.issue.pull_request
+    if: |
+      github.event_name == 'pull_request' ||
+      github.event_name == 'push' ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request)
     runs-on: ubuntu-latest
     steps:
-      - name: Check trigger
+      - name: Check comment trigger (skip if PR/push event)
+        if: github.event_name == 'issue_comment'
         id: check
         run: |
           body="${{ github.event.comment.body }}"
@@ -18,12 +26,12 @@ jobs:
           else
             echo "trigger=false" >> $GITHUB_OUTPUT
           fi
-      - name: Fail if not triggered
-        if: steps.check.outputs.trigger == 'false'
-        run: exit 1
+      - name: Stop if comment but not triggered
+        if: github.event_name == 'issue_comment' && steps.check.outputs.trigger != 'true'
+        run: exit 0
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.issue.pull_request.head.sha }}
+          ref: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request.head.sha || github.sha }}
 
       - name: Debug branch
         run: git branch --show-current
