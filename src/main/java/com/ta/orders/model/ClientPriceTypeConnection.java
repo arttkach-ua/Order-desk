@@ -8,24 +8,25 @@ import lombok.ToString;
 
 import java.time.LocalDateTime;
 
-@Table(name = "price_types")
+@Table(name = "client_price_type_connection")
 @Entity
 @Data
 @ToString
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class PriceType {
+public class ClientPriceTypeConnection {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column
-    private String name;
+    @Column(name = "client_id")
+    private long clientId;
 
-    @Column(name = "is_default")
-    private boolean isDefault;
+    @Column(name = "price_type_id")
+    private long priceTypeId;
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime creationTime;
 }
+

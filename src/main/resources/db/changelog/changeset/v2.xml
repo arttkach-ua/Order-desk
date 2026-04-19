@@ -38,8 +38,67 @@
             <column name="name" type="varchar(100)">
                 <constraints nullable="false"/>
             </column>
+            <column name = "is_default" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
             <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>
+    </changeSet>
+
+    <changeSet id="unique-default-price-type" author="artem.tkach" dbms="postgresql">
+        <createIndex indexName="ux_price_types_default_true"
+                     tableName="price_types"
+                     unique="true">
+            <column name="is_default"/>
+            <where>is_default = true</where>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="insert-default-price-type" author="artem.tkach" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM price_types WHERE is_default = true
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="price_types">
+            <column name="name" value="Retail"/>
+            <column name="is_default" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="create table client_price_type_connection" author="artem.tkach" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="client_price_type_connection"/>
+            </not>
+        </preConditions>
+        <createTable tableName="client_price_type_connection">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="client_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_client_price_type_connection_client"
+                             referencedTableName="customers"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="price_type_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_client_price_type_connection_price_type"
+                             referencedTableName="price_types"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="unique-client-price-type-connection" author="artem.tkach" dbms="postgresql">
+        <createIndex indexName="ux_client_price_type_connection_unique"
+                     tableName="client_price_type_connection"
+                     unique="true">
+            <column name="client_id"/>
+            <column name="price_type_id"/>
+        </createIndex>
     </changeSet>
 
 </databaseChangeLog>
