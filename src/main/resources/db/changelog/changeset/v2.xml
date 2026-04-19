@@ -46,12 +46,11 @@
     </changeSet>
 
     <changeSet id="unique-default-price-type" author="artem.tkach" dbms="postgresql">
-        <createIndex indexName="ux_price_types_default_true"
-                     tableName="price_types"
-                     unique="true">
-            <column name="is_default"/>
-            <where>is_default = true</where>
-        </createIndex>
+        <sql>
+            CREATE UNIQUE INDEX ux_price_types_default_true
+            ON price_types(is_default)
+            WHERE is_default = true;
+        </sql>
     </changeSet>
 
     <changeSet id="insert-default-price-type" author="artem.tkach" dbms="postgresql">
