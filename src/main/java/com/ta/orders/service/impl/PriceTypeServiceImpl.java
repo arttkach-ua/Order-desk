@@ -1,5 +1,7 @@
 package com.ta.orders.service.impl;
 
+import com.ta.orders.dto.PriceTypeDto;
+import com.ta.orders.mappers.PriceTypeMapper;
 import com.ta.orders.model.PriceType;
 import com.ta.orders.repository.PriceTypeRepository;
 import com.ta.orders.service.PriceTypeService;
@@ -18,16 +20,34 @@ import java.util.Optional;
 public class PriceTypeServiceImpl implements PriceTypeService {
 
     private final PriceTypeRepository priceTypeRepository;
+    private final PriceTypeMapper priceTypeMapper;
 
     @Override
     @CacheEvict(value = "priceTypeDefault", allEntries = true)
-    public PriceType create(PriceType priceType) {
-        return priceTypeRepository.save(priceType);
+    public PriceTypeDto create(PriceTypeDto priceTypeDto) {
+        return Optional.of(priceTypeDto).stream()
+                .map(priceTypeMapper::toEntity)
+                .map(priceTypeRepository::save)
+                .map(priceTypeMapper::toDto)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Failed to create PriceType: " + priceTypeDto));
     }
 
     @Override
-    public List<PriceType> getAll() {
-        return priceTypeRepository.findAll();
+    public List<PriceTypeDto> create(List<PriceTypeDto> priceTypes) {
+        return priceTypes.stream()
+                .map(priceTypeMapper::toEntity)
+                .map(priceTypeRepository::save)
+                .map(priceTypeMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public List<PriceTypeDto> getAll() {
+        return priceTypeRepository.findAll()
+                .stream()
+                .map(priceTypeMapper::toDto)
+                .toList();
     }
 
     @Override

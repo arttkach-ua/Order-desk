@@ -100,5 +100,57 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="create table price_history" author="artem.tkach" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="price_history"/>
+            </not>
+        </preConditions>
+        <createTable tableName="price_history">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_price_history_product"
+                             referencedTableName="products"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="price_type" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="decimal(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valid_from" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valid_to" type="timestamp"/>
+            <column name="is_current" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="index-price-history-current" author="artem.tkach" dbms="postgresql">
+        <createIndex indexName="idx_current_price"
+                     tableName="price_history">
+            <column name="product_id"/>
+            <column name="price_type"/>
+            <column name="is_current"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="index-price-history-temporal" author="artem.tkach" dbms="postgresql">
+        <createIndex indexName="idx_historical_price"
+                     tableName="price_history">
+            <column name="product_id"/>
+            <column name="price_type"/>
+            <column name="valid_from"/>
+            <column name="valid_to"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
 

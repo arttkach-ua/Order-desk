@@ -1,5 +1,6 @@
 package com.ta.orders.service;
 
+import com.ta.orders.dto.PriceTypeDto;
 import com.ta.orders.model.PriceType;
 import org.springframework.cache.annotation.Cacheable;
 
@@ -8,9 +9,11 @@ import java.util.Optional;
 
 public interface PriceTypeService {
 
-    PriceType create(PriceType priceType);
+    PriceTypeDto create(PriceTypeDto priceType);
 
-    List<PriceType> getAll();
+    List<PriceTypeDto> create(List<PriceTypeDto> priceTypes);
+
+    List<PriceTypeDto> getAll();
 
     PriceType getClientsPriceTypeOrDefault(long ClientId);
 
