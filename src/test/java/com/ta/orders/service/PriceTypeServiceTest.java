@@ -1,5 +1,7 @@
 package com.ta.orders.service;
 
+import com.ta.orders.dto.PriceTypeDto;
+import com.ta.orders.mappers.PriceTypeMapper;
 import com.ta.orders.model.PriceType;
 import com.ta.orders.repository.PriceTypeRepository;
 import com.ta.orders.service.impl.PriceTypeServiceImpl;
@@ -34,6 +36,9 @@ class PriceTypeServiceTest {
     @Mock
     private PriceTypeRepository priceTypeRepository;
 
+    @Mock
+    private PriceTypeMapper priceTypeMapper;
+
     @InjectMocks
     private PriceTypeServiceImpl priceTypeService;
 
@@ -67,83 +72,211 @@ class PriceTypeServiceTest {
 
     // ========== create() tests ==========
 
-    @Test
-    void shouldCreatePriceType() {
-        // Arrange
-        PriceType inputPriceType = new PriceType();
-        inputPriceType.setName(DEFAULT_PRICE_TYPE_NAME);
-        inputPriceType.setDefault(true);
+     // [Old tests removed - replaced with DTO-based tests below]
 
-        when(priceTypeRepository.save(inputPriceType)).thenReturn(defaultPriceType);
+     // ========== create(PriceTypeDto) tests ==========
 
-        // Act
-        PriceType result = priceTypeService.create(inputPriceType);
+     @Test
+     void shouldCreatePriceTypeFromDto() {
+         // Arrange
+         PriceTypeDto inputDto = new PriceTypeDto(PRICE_TYPE_ID, DEFAULT_PRICE_TYPE_NAME);
+         PriceTypeDto expectedDto = new PriceTypeDto(PRICE_TYPE_ID, DEFAULT_PRICE_TYPE_NAME);
 
-        // Assert
-        assertThat(result)
-                .isNotNull()
-                .satisfies(priceType -> {
-                    assertThat(priceType.getId()).isEqualTo(PRICE_TYPE_ID);
-                    assertThat(priceType.getName()).isEqualTo(DEFAULT_PRICE_TYPE_NAME);
-                    assertThat(priceType.isDefault()).isTrue();
-                });
+         when(priceTypeMapper.toEntity(inputDto)).thenReturn(defaultPriceType);
+         when(priceTypeRepository.save(defaultPriceType)).thenReturn(defaultPriceType);
+         when(priceTypeMapper.toDto(defaultPriceType)).thenReturn(expectedDto);
 
-        verify(priceTypeRepository, times(1)).save(inputPriceType);
-        verifyNoMoreInteractions(priceTypeRepository);
-    }
+         // Act
+         PriceTypeDto result = priceTypeService.create(inputDto);
 
-    @Test
-    void shouldReturnSavedPriceTypeWithCorrectData() {
-        // Arrange
-        PriceType inputPriceType = new PriceType();
-        inputPriceType.setName(CLIENT_PRICE_TYPE_NAME);
-        inputPriceType.setDefault(false);
+         // Assert
+         assertThat(result)
+                 .isNotNull()
+                 .isEqualTo(expectedDto)
+                 .hasFieldOrPropertyWithValue("id", PRICE_TYPE_ID)
+                 .hasFieldOrPropertyWithValue("name", DEFAULT_PRICE_TYPE_NAME);
 
-        when(priceTypeRepository.save(inputPriceType)).thenReturn(clientPriceType);
+         verify(priceTypeMapper, times(1)).toEntity(inputDto);
+         verify(priceTypeRepository, times(1)).save(defaultPriceType);
+         verify(priceTypeMapper, times(1)).toDto(defaultPriceType);
+     }
 
-        // Act
-        PriceType result = priceTypeService.create(inputPriceType);
+     @Test
+     void shouldCreateClientPriceTypeDto() {
+         // Arrange
+         PriceTypeDto inputDto = new PriceTypeDto(CLIENT_PRICE_TYPE_ID, CLIENT_PRICE_TYPE_NAME);
+         PriceTypeDto expectedDto = new PriceTypeDto(CLIENT_PRICE_TYPE_ID, CLIENT_PRICE_TYPE_NAME);
 
-        // Assert
-        assertThat(result)
-                .isEqualTo(clientPriceType)
-                .hasFieldOrPropertyWithValue("id", CLIENT_PRICE_TYPE_ID)
-                .hasFieldOrPropertyWithValue("name", CLIENT_PRICE_TYPE_NAME)
-                .hasFieldOrPropertyWithValue("default", false);
-    }
+         when(priceTypeMapper.toEntity(inputDto)).thenReturn(clientPriceType);
+         when(priceTypeRepository.save(clientPriceType)).thenReturn(clientPriceType);
+         when(priceTypeMapper.toDto(clientPriceType)).thenReturn(expectedDto);
 
-    @Test
-    void shouldCallRepositorySaveMethodOnce() {
-        // Arrange
-        PriceType inputPriceType = new PriceType();
-        inputPriceType.setName(ANOTHER_PRICE_TYPE_NAME);
+         // Act
+         PriceTypeDto result = priceTypeService.create(inputDto);
 
-        when(priceTypeRepository.save(inputPriceType)).thenReturn(anotherPriceType);
+         // Assert
+         assertThat(result)
+                 .isNotNull()
+                 .isEqualTo(expectedDto)
+                 .satisfies(dto -> {
+                     assertThat(dto.id()).isEqualTo(CLIENT_PRICE_TYPE_ID);
+                     assertThat(dto.name()).isEqualTo(CLIENT_PRICE_TYPE_NAME);
+                 });
 
-        // Act
-        priceTypeService.create(inputPriceType);
+         verify(priceTypeMapper, times(1)).toEntity(inputDto);
+         verify(priceTypeRepository, times(1)).save(clientPriceType);
+         verify(priceTypeMapper, times(1)).toDto(clientPriceType);
+     }
 
-        // Assert
-        verify(priceTypeRepository, times(1)).save(any(PriceType.class));
-    }
+     @Test
+     void shouldVerifyMapperAndRepositoryCallSequenceWhenCreatingDto() {
+         // Arrange
+         PriceTypeDto inputDto = new PriceTypeDto(PRICE_TYPE_ID, DEFAULT_PRICE_TYPE_NAME);
+         PriceTypeDto outputDto = new PriceTypeDto(PRICE_TYPE_ID, DEFAULT_PRICE_TYPE_NAME);
 
-    // ========== getAll() tests ==========
+         when(priceTypeMapper.toEntity(inputDto)).thenReturn(defaultPriceType);
+         when(priceTypeRepository.save(defaultPriceType)).thenReturn(defaultPriceType);
+         when(priceTypeMapper.toDto(defaultPriceType)).thenReturn(outputDto);
+
+         // Act
+         PriceTypeDto result = priceTypeService.create(inputDto);
+
+         // Assert
+         assertThat(result).isEqualTo(outputDto);
+         verify(priceTypeMapper).toEntity(inputDto);
+         verify(priceTypeRepository).save(defaultPriceType);
+         verify(priceTypeMapper).toDto(defaultPriceType);
+     }
+
+     // ========== create(List<PriceTypeDto>) tests ==========
+
+     @Test
+     void shouldCreateMultiplePriceTypesFromDtoList() {
+         // Arrange
+         PriceTypeDto defaultDto = new PriceTypeDto(PRICE_TYPE_ID, DEFAULT_PRICE_TYPE_NAME);
+         PriceTypeDto clientDto = new PriceTypeDto(CLIENT_PRICE_TYPE_ID, CLIENT_PRICE_TYPE_NAME);
+         List<PriceTypeDto> inputDtos = List.of(defaultDto, clientDto);
+
+         when(priceTypeMapper.toEntity(defaultDto)).thenReturn(defaultPriceType);
+         when(priceTypeMapper.toEntity(clientDto)).thenReturn(clientPriceType);
+         when(priceTypeRepository.save(defaultPriceType)).thenReturn(defaultPriceType);
+         when(priceTypeRepository.save(clientPriceType)).thenReturn(clientPriceType);
+         when(priceTypeMapper.toDto(defaultPriceType)).thenReturn(defaultDto);
+         when(priceTypeMapper.toDto(clientPriceType)).thenReturn(clientDto);
+
+         // Act
+         List<PriceTypeDto> result = priceTypeService.create(inputDtos);
+
+         // Assert
+         assertThat(result)
+                 .isNotNull()
+                 .hasSize(2)
+                 .containsExactly(defaultDto, clientDto);
+
+         verify(priceTypeMapper, times(2)).toEntity(any(PriceTypeDto.class));
+         verify(priceTypeRepository, times(2)).save(any(PriceType.class));
+         verify(priceTypeMapper, times(2)).toDto(any(PriceType.class));
+     }
+
+     @Test
+     void shouldCreateSinglePriceTypeInBatchList() {
+         // Arrange
+         PriceTypeDto inputDto = new PriceTypeDto(ANOTHER_PRICE_TYPE_ID, ANOTHER_PRICE_TYPE_NAME);
+         List<PriceTypeDto> inputDtos = List.of(inputDto);
+
+         when(priceTypeMapper.toEntity(inputDto)).thenReturn(anotherPriceType);
+         when(priceTypeRepository.save(anotherPriceType)).thenReturn(anotherPriceType);
+         when(priceTypeMapper.toDto(anotherPriceType)).thenReturn(inputDto);
+
+         // Act
+         List<PriceTypeDto> result = priceTypeService.create(inputDtos);
+
+         // Assert
+         assertThat(result)
+                 .isNotNull()
+                 .hasSize(1)
+                 .contains(inputDto);
+
+         verify(priceTypeMapper, times(1)).toEntity(inputDto);
+         verify(priceTypeRepository, times(1)).save(anotherPriceType);
+         verify(priceTypeMapper, times(1)).toDto(anotherPriceType);
+     }
+
+     @Test
+     void shouldCreateEmptyListWhenInputIsEmpty() {
+         // Arrange
+         List<PriceTypeDto> inputDtos = List.of();
+
+         // Act
+         List<PriceTypeDto> result = priceTypeService.create(inputDtos);
+
+         // Assert
+         assertThat(result)
+                 .isNotNull()
+                 .isEmpty();
+
+         verify(priceTypeMapper, never()).toEntity(any(PriceTypeDto.class));
+         verify(priceTypeRepository, never()).save(any(PriceType.class));
+         verify(priceTypeMapper, never()).toDto(any(PriceType.class));
+     }
+
+     @Test
+     void shouldCreateThreePriceTypesPreservingOrder() {
+         // Arrange
+         PriceTypeDto defaultDto = new PriceTypeDto(PRICE_TYPE_ID, DEFAULT_PRICE_TYPE_NAME);
+         PriceTypeDto clientDto = new PriceTypeDto(CLIENT_PRICE_TYPE_ID, CLIENT_PRICE_TYPE_NAME);
+         PriceTypeDto anotherDto = new PriceTypeDto(ANOTHER_PRICE_TYPE_ID, ANOTHER_PRICE_TYPE_NAME);
+         List<PriceTypeDto> inputDtos = List.of(defaultDto, clientDto, anotherDto);
+
+         when(priceTypeMapper.toEntity(defaultDto)).thenReturn(defaultPriceType);
+         when(priceTypeMapper.toEntity(clientDto)).thenReturn(clientPriceType);
+         when(priceTypeMapper.toEntity(anotherDto)).thenReturn(anotherPriceType);
+         when(priceTypeRepository.save(defaultPriceType)).thenReturn(defaultPriceType);
+         when(priceTypeRepository.save(clientPriceType)).thenReturn(clientPriceType);
+         when(priceTypeRepository.save(anotherPriceType)).thenReturn(anotherPriceType);
+         when(priceTypeMapper.toDto(defaultPriceType)).thenReturn(defaultDto);
+         when(priceTypeMapper.toDto(clientPriceType)).thenReturn(clientDto);
+         when(priceTypeMapper.toDto(anotherPriceType)).thenReturn(anotherDto);
+
+         // Act
+         List<PriceTypeDto> result = priceTypeService.create(inputDtos);
+
+         // Assert
+         assertThat(result)
+                 .hasSize(3)
+                 .extracting(PriceTypeDto::id)
+                 .containsExactly(PRICE_TYPE_ID, CLIENT_PRICE_TYPE_ID, ANOTHER_PRICE_TYPE_ID);
+
+         assertThat(result)
+                 .extracting(PriceTypeDto::name)
+                 .containsExactly(DEFAULT_PRICE_TYPE_NAME, CLIENT_PRICE_TYPE_NAME, ANOTHER_PRICE_TYPE_NAME);
+     }
+
+     // ========== getAll() tests ==========
 
     @Test
     void shouldGetAllPriceTypes() {
         // Arrange
+        PriceTypeDto defaultDto = new PriceTypeDto(PRICE_TYPE_ID, DEFAULT_PRICE_TYPE_NAME);
+        PriceTypeDto clientDto = new PriceTypeDto(CLIENT_PRICE_TYPE_ID, CLIENT_PRICE_TYPE_NAME);
+        PriceTypeDto anotherDto = new PriceTypeDto(ANOTHER_PRICE_TYPE_ID, ANOTHER_PRICE_TYPE_NAME);
+
         when(priceTypeRepository.findAll()).thenReturn(Arrays.asList(defaultPriceType, clientPriceType, anotherPriceType));
+        when(priceTypeMapper.toDto(defaultPriceType)).thenReturn(defaultDto);
+        when(priceTypeMapper.toDto(clientPriceType)).thenReturn(clientDto);
+        when(priceTypeMapper.toDto(anotherPriceType)).thenReturn(anotherDto);
 
         // Act
-        List<PriceType> result = priceTypeService.getAll();
+        List<PriceTypeDto> result = priceTypeService.getAll();
 
         // Assert
         assertThat(result)
                 .isNotNull()
                 .hasSize(3)
-                .containsExactly(defaultPriceType, clientPriceType, anotherPriceType);
+                .containsExactly(defaultDto, clientDto, anotherDto);
 
         verify(priceTypeRepository, times(1)).findAll();
+        verify(priceTypeMapper, times(3)).toDto(any(PriceType.class));
         verifyNoMoreInteractions(priceTypeRepository);
     }
 
@@ -153,7 +286,7 @@ class PriceTypeServiceTest {
         when(priceTypeRepository.findAll()).thenReturn(List.of());
 
         // Act
-        List<PriceType> result = priceTypeService.getAll();
+        List<PriceTypeDto> result = priceTypeService.getAll();
 
         // Assert
         assertThat(result)
@@ -167,6 +300,7 @@ class PriceTypeServiceTest {
     void shouldCallRepositoryFindAllMethodOnce() {
         // Arrange
         when(priceTypeRepository.findAll()).thenReturn(List.of(defaultPriceType));
+        when(priceTypeMapper.toDto(defaultPriceType)).thenReturn(new PriceTypeDto(PRICE_TYPE_ID, DEFAULT_PRICE_TYPE_NAME));
 
         // Act
         priceTypeService.getAll();
@@ -178,15 +312,20 @@ class PriceTypeServiceTest {
     @Test
     void shouldReturnMultiplePriceTypesInCorrectOrder() {
         // Arrange
+        PriceTypeDto defaultDto = new PriceTypeDto(PRICE_TYPE_ID, DEFAULT_PRICE_TYPE_NAME);
+        PriceTypeDto clientDto = new PriceTypeDto(CLIENT_PRICE_TYPE_ID, CLIENT_PRICE_TYPE_NAME);
+
         when(priceTypeRepository.findAll()).thenReturn(Arrays.asList(defaultPriceType, clientPriceType));
+        when(priceTypeMapper.toDto(defaultPriceType)).thenReturn(defaultDto);
+        when(priceTypeMapper.toDto(clientPriceType)).thenReturn(clientDto);
 
         // Act
-        List<PriceType> result = priceTypeService.getAll();
+        List<PriceTypeDto> result = priceTypeService.getAll();
 
         // Assert
         assertThat(result)
                 .hasSize(2)
-                .extracting(PriceType::getId)
+                .extracting(PriceTypeDto::id)
                 .containsExactly(PRICE_TYPE_ID, CLIENT_PRICE_TYPE_ID);
     }
 
