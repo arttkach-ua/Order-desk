@@ -7,7 +7,6 @@ import com.ta.orders.dto.PriceItemDto;
 import com.ta.orders.mappers.PriceMapper;
 import com.ta.orders.model.Price;
 import com.ta.orders.repository.PriceRepository;
-import com.ta.orders.repository.ProductRepository;
 import com.ta.orders.service.PriceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
 public class PriceServiceImpl implements PriceService {
 
     private final PriceRepository priceRepository;
-    private final ProductRepository productRepository;
     private final PriceMapper priceMapper;
 
     @Override
