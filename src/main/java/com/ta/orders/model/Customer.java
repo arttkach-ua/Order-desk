@@ -34,6 +34,11 @@ public class Customer {
     @Column(name = "phone")
     @Schema(description = "Phone number of the customer", example = "+1234567890")
     private String phone;
+
+    @ManyToOne
+    @JoinColumn(name = "expeditor_id")
+    @Schema(description = "Expeditor assigned to the customer")
+    private Expeditor expeditor;
 }
 
 
