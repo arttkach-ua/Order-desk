@@ -152,5 +152,43 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="create table expeditors" author="artem.tkach">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="expeditors"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="expeditors">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(150)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="add expeditor_id to customers" author="artem.tkach">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="customers" columnName="expeditor_id"/>
+            </not>
+        </preConditions>
+
+        <addColumn tableName="customers">
+            <column name="expeditor_id" type="bigint">
+                <constraints nullable="true"
+                             foreignKeyName="fk_customers_expeditor"
+                             referencedTableName="expeditors"
+                             referencedColumnNames="id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
 
