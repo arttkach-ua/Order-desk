@@ -3,30 +3,18 @@ services:
     image: postgres:15
     container_name: postgres-container
     restart: always
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: mydatabase
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     networks:
       - springboot-postgres-network
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-#  app:
-#    build: .
-#    container_name: springboot-app
-#    depends_on:
-#      - postgres
-#    ports:
-#      - "8080:8080"
-#    networks:
-#      - springboot-postgres-network
-#    environment:
-#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydatabase
-#      SPRING_DATASOURCE_USERNAME: postgres
-#      SPRING_DATASOURCE_PASSWORD: postgrespassword
 
 networks:
   springboot-postgres-network:
