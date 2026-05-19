@@ -26,3 +26,5 @@ replay_pid*
 # Ignore JetBrains IDEA workspace folder
 .idea
 
+# Environment variables (contains sensitive credentials)
+.env
