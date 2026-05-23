@@ -1,14 +1,14 @@
-# Use Eclipse Temurin (official OpenJDK replacement)
-FROM eclipse-temurin:17-jre-slim
+# Use Eclipse Temurin (official OpenJDK replacement) - Alpine for minimal size
+FROM eclipse-temurin:17-jre-alpine
 
-# Install curl for health checks
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+# Install curl for health checks (Alpine uses apk instead of apt-get)
+RUN apk add --no-cache curl
 
 # Set working directory
 WORKDIR /app
 
-# Create a non-root user for running the application
-RUN groupadd -r spring && useradd -r -g spring spring
+# Create a non-root user for running the application (Alpine Linux syntax)
+RUN addgroup -S spring && adduser -S spring -G spring
 
 # Copy the built JAR file
 COPY build/libs/*.jar app.jar
