@@ -1,4 +1,4 @@
-# AGENTS.md - AI Agent Guide for Orders Desk
+# AGENTS.md - AI Agent Guide for Orders Desk 
 
 ## Project Overview
 **Orders Desk** is a Spring Boot 3.3.4 food-selling application with a monolithic backend architecture. The system manages products, categories, customers, and orders through RESTful APIs. The architecture is intentionally simple to support future modularization.
