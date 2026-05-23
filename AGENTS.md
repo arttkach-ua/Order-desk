@@ -1,5 +1,57 @@
 # AGENTS.md - AI Agent Guide for Orders Desk 
 
+## ⚠️ CRITICAL RULES - READ FIRST
+
+### Git Operations - USER CONTROLS ALL GIT ACTIONS
+**NEVER automatically commit or push code to git without explicit user permission!**
+
+**Rules for Git Operations**:
+1. ❌ **DO NOT** run `git add` without user approval
+2. ❌ **DO NOT** run `git commit` without user approval  
+3. ❌ **DO NOT** run `git push` without user approval
+4. ❌ **DO NOT** run `git pull` or `git merge` without user approval
+5. ✅ **ALWAYS ask the user first** before any git operation
+6. ✅ **Show what will be committed** and wait for user confirmation
+7. ✅ **Explain the changes** before committing
+
+**Allowed Git Operations (informational only)**:
+- ✅ `git status` - Check repository status
+- ✅ `git diff` - Show file changes
+- ✅ `git log` - View commit history
+- ✅ `git branch` - List branches
+- ✅ Any read-only git command
+
+**How to Handle Code Changes**:
+1. Make the code changes in files
+2. Show the user what was changed with `git diff`
+3. **STOP and ask**: "Would you like me to commit and push these changes?"
+4. **WAIT for explicit user permission**
+5. Only proceed if user says YES
+
+**Example - CORRECT Workflow**:
+```
+Agent: I've updated the Dockerfile to fix the image issue.
+Agent: Running git diff to show changes...
+Agent: [shows diff output]
+Agent: Would you like me to commit and push these changes to git?
+User: yes
+Agent: [now runs git add, git commit, git push]
+```
+
+**Example - INCORRECT Workflow** ❌:
+```
+Agent: I've updated the Dockerfile.
+Agent: [automatically runs git add, git commit, git push without asking]
+❌ NEVER DO THIS!
+```
+
+**User maintains full control over**:
+- What gets committed
+- Commit messages
+- When to push to remote
+- Which branch to push to
+- Merge decisions
+
 ## Project Overview
 **Orders Desk** is a Spring Boot 3.3.4 food-selling application with a monolithic backend architecture. The system manages products, categories, customers, and orders through RESTful APIs. The architecture is intentionally simple to support future modularization.
 
@@ -129,14 +181,15 @@ docker-compose up -d
 
 ## Common Pitfalls for AI Agents
 
-1. **Always use DTOs in service public methods** - Never expose entities directly
-2. **Mapper generation**: Use `@Mapper(componentModel = "spring")` to ensure Spring autowiring
-3. **Cache invalidation**: When implementing create/update/delete, use `@CacheEvict` on same methods
-4. **Database timestamps**: Always set `insertable = false, updatable = false` for created_at fields
-5. **Liquibase changesets**: New schemas MUST have XML changesets; don't rely on Hibernate DDL alone
-6. **Controller CORS**: Add `@CrossOrigin` to all new controllers for Telegram mini-app access
-7. **API versioning**: New endpoints go to `/api/v1/*` - versioning is project-wide standard
-8. **Service interfaces required**: Don't create service classes directly; always use interface + impl pattern
+1. **🚨 NEVER auto-commit or push to git** - ALWAYS ask user permission first (see Critical Rules at top)
+2. **Always use DTOs in service public methods** - Never expose entities directly
+3. **Mapper generation**: Use `@Mapper(componentModel = "spring")` to ensure Spring autowiring
+4. **Cache invalidation**: When implementing create/update/delete, use `@CacheEvict` on same methods
+5. **Database timestamps**: Always set `insertable = false, updatable = false` for created_at fields
+6. **Liquibase changesets**: New schemas MUST have XML changesets; don't rely on Hibernate DDL alone
+7. **Controller CORS**: Add `@CrossOrigin` to all new controllers for Telegram mini-app access
+8. **API versioning**: New endpoints go to `/api/v1/*` - versioning is project-wide standard
+9. **Service interfaces required**: Don't create service classes directly; always use interface + impl pattern
 
 ## Directory Map for Key Components
 
