@@ -10,6 +10,8 @@ import com.ta.orders.repository.ExpeditorRepository;
 import com.ta.orders.service.ExpeditorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,11 +36,11 @@ public class ExpeditorServiceImpl implements ExpeditorService {
     }
 
     @Override
-    public List<ExpeditorDto> getAll() {
-        log.debug("Getting all expeditors");
-        return expeditorRepository.findAll().stream()
-                .map(expeditorMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<ExpeditorDto> getAll(Pageable pageable) {
+        log.debug("Getting all expeditors with pagination: page={}, size={}, sort={}",
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+        return expeditorRepository.findAll(pageable)
+                .map(expeditorMapper::toDto);
     }
 
     @Override

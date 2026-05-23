@@ -24,7 +24,8 @@ hs_err_pid*
 replay_pid*
 
 # Ignore JetBrains IDEA workspace folder
-.idea
+.idea/
+.build/
 
 # Environment variables (contains sensitive credentials)
 .env
