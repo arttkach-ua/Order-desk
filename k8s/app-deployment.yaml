@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-app
+  namespace: orders-desk
+  labels:
+    app: orders-app
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: orders-app
+  template:
+    metadata:
+      labels:
+        app: orders-app
+    spec:
+      containers:
+      - name: orders-app
+        image: ghcr.io/GITHUB_USERNAME/orders-desk:latest  # Will be replaced by GitHub Actions
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: SPRING_DATASOURCE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SPRING_DATASOURCE_URL
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_USERNAME
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_PASSWORD
+        - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+        - name: SPRING_JPA_DATABASE_PLATFORM
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SPRING_JPA_DATABASE_PLATFORM
+        - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        - name: SPRING_LIQUIBASE_CHANGE_LOG
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SPRING_LIQUIBASE_CHANGE_LOG
+        - name: SPRING_CACHE_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SPRING_CACHE_TYPE
+        - name: SPRING_CACHE_CAFFEINE_SPEC
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SPRING_CACHE_CAFFEINE_SPEC
+        - name: SPRING_CACHE_CACHE_NAMES
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SPRING_CACHE_CACHE_NAMES
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      imagePullSecrets:
+      - name: ghcr-secret  # Will be created by GitHub Actions if needed
+
