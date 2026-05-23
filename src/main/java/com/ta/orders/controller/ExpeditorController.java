@@ -12,6 +12,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +30,8 @@ import java.util.List;
 public class ExpeditorController {
 
     private final ExpeditorService expeditorService;
+    private static final int DEFAULT_PAGE = 0;
+    private static final int DEFAULT_SIZE = 50;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -43,15 +49,35 @@ public class ExpeditorController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Get all expeditors", description = "Retrieves a list of all expeditors in the system")
+    @Operation(summary = "Get all expeditors with pagination and sorting",
+            description = "Retrieves a paginated and sorted list of expeditors. Sortable fields: id, name")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of expeditors retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ExpeditorDto.class))),
+            @ApiResponse(responseCode = "200", description = "Paginated list of expeditors retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public List<ExpeditorDto> getAll() {
-        log.debug("Getting all expeditors");
-        return expeditorService.getAll();
+    public Page<ExpeditorDto> getAll(
+            @Parameter(description = "Page number (0-indexed)", example = "0")
+            @RequestParam(defaultValue = "" + DEFAULT_PAGE) int page,
+            @Parameter(description = "Page size", example = "50")
+            @RequestParam(defaultValue = "" + DEFAULT_SIZE) int size,
+            @Parameter(description = "Sort field and direction (e.g., 'id,desc' or 'name,asc')", example = "id,asc")
+            @RequestParam(required = false) String sort) {
+        log.debug("Getting all expeditors with pagination: page={}, size={}, sort={}", page, size, sort);
+
+        Pageable pageable;
+        if (sort != null && !sort.isEmpty()) {
+            String[] sortParams = sort.split(",");
+            String sortField = sortParams[0];
+            Sort.Direction direction = sortParams.length > 1 && "desc".equalsIgnoreCase(sortParams[1])
+                    ? Sort.Direction.DESC
+                    : Sort.Direction.ASC;
+            pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+        } else {
+            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
+        }
+
+        return expeditorService.getAll(pageable);
     }
 
     @GetMapping("/{id}")
