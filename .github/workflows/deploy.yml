@@ -131,6 +131,14 @@ jobs:
           echo "${{ secrets.K3S_KUBECONFIG }}" | base64 -d > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
           
+          # Replace localhost with actual k3s server IP
+          sed -i 's|https://127.0.0.1:6443|https://${{ secrets.K3S_HOST }}:6443|g' $HOME/.kube/config
+          
+          # Disable SSL verification for self-signed certificates
+          kubectl config set-cluster default --insecure-skip-tls-verify=true
+          
+          echo "📝 Kubeconfig configured for k3s server: ${{ secrets.K3S_HOST }}"
+          
           # Test connection
           kubectl cluster-info
           kubectl get nodes
