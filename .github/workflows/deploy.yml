@@ -3,7 +3,8 @@ name: Deploy to k3s
 on:
   push:
     branches:
-      - master
+      - main
+      - master  # Keep for compatibility if branch is renamed
   workflow_dispatch:  # Allow manual trigger
 
 env:
@@ -157,7 +158,7 @@ jobs:
         run: |
           # Replace the image placeholder with actual image
           IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.sha }}"
-          sed -i "s|image: ghcr.io/GITHUB_USERNAME/orders-desk:latest|image: ${IMAGE_TAG}|g" k8s/app-deployment.yaml
+          sed -i "s|image: ghcr.io/arttkach-ua/order-desk:latest|image: ${IMAGE_TAG}|g" k8s/app-deployment.yaml
           
           echo "📦 Updated deployment to use image: ${IMAGE_TAG}"
           
