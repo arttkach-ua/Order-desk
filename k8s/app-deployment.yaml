@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: orders-app
-        image: ghcr.io/GITHUB_USERNAME/orders-desk:latest  # Will be replaced by GitHub Actions
+        image: ghcr.io/arttkach-ua/order-desk:latest  # Will be replaced by GitHub Actions with versioned tag
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
