@@ -133,11 +133,12 @@ jobs:
         env:
           IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.sha }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         with:
           host: ${{ secrets.K3S_HOST }}
           username: root
           key: ${{ secrets.K3S_SSH_KEY }}
-          envs: IMAGE_TAG,POSTGRES_PASSWORD
+          envs: IMAGE_TAG,POSTGRES_PASSWORD,GHCR_TOKEN
           script: |
             echo "🚀 Starting deployment to k3s..."
             
@@ -164,6 +165,16 @@ jobs:
             else
               echo "postgres-secret already exists"
             fi
+            
+            # Create/update GHCR image pull secret
+            echo "Creating image pull secret for GitHub Container Registry..."
+            sudo k3s kubectl delete secret ghcr-secret -n orders-desk --ignore-not-found
+            sudo k3s kubectl create secret docker-registry ghcr-secret \
+              --docker-server=ghcr.io \
+              --docker-username=arttkach-ua \
+              --docker-password=${GHCR_TOKEN} \
+              -n orders-desk
+            echo "✅ Image pull secret created"
             
             echo "✅ Namespace and secrets configured"
 
@@ -245,4 +256,3 @@ jobs:
           echo "- Health Check: http://${{ secrets.K3S_HOST }}:30080/actuator/health" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ **Deployment Status:** SUCCESS" >> $GITHUB_STEP_SUMMARY
-
