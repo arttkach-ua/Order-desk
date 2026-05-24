@@ -125,104 +125,108 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Configure kubectl with k3s
-        run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.K3S_KUBECONFIG }}" | base64 -d > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
-          
-          # Replace localhost with actual k3s server IP
-          sed -i 's|https://127.0.0.1:6443|https://${{ secrets.K3S_HOST }}:6443|g' $HOME/.kube/config
-          
-          # Disable SSL verification for self-signed certificates
-          kubectl config set-cluster default --insecure-skip-tls-verify=true
-          
-          echo "📝 Kubeconfig configured for k3s server: ${{ secrets.K3S_HOST }}"
-          
-          # Test connection
-          kubectl cluster-info
-          kubectl get nodes
+      - name: Deploy to k3s via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        env:
+          IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.sha }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        with:
+          host: ${{ secrets.K3S_HOST }}
+          username: root
+          key: ${{ secrets.K3S_SSH_KEY }}
+          envs: IMAGE_TAG,POSTGRES_PASSWORD
+          script: |
+            echo "🚀 Starting deployment to k3s..."
+            
+            # Create namespace if not exists
+            sudo k3s kubectl apply -f - <<EOF
+            apiVersion: v1
+            kind: Namespace
+            metadata:
+              name: orders-desk
+              labels:
+                name: orders-desk
+                environment: production
+            EOF
+            
+            # Create database secret if not exists
+            if ! sudo k3s kubectl get secret postgres-secret -n orders-desk &> /dev/null; then
+              echo "Creating postgres-secret..."
+              sudo k3s kubectl create secret generic postgres-secret \
+                --from-literal=POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+                --from-literal=DB_USERNAME=postgres \
+                --from-literal=DB_PASSWORD=${POSTGRES_PASSWORD} \
+                --from-literal=POSTGRES_DB=mydatabase \
+                -n orders-desk
+            else
+              echo "postgres-secret already exists"
+            fi
+            
+            echo "✅ Namespace and secrets configured"
 
-      - name: Create namespace if not exists
-        run: |
-          kubectl apply -f k8s/namespace.yaml
+      - name: Copy k8s manifests to server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.K3S_HOST }}
+          username: root
+          key: ${{ secrets.K3S_SSH_KEY }}
+          source: "k8s/*"
+          target: "/tmp/orders-desk-deploy"
 
-      - name: Create database secret if not exists
-        run: |
-          # Check if secret exists
-          if ! kubectl get secret postgres-secret -n orders-desk &> /dev/null; then
-            echo "Creating postgres-secret..."
-            kubectl create secret generic postgres-secret \
-              --from-literal=POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
-              --from-literal=DB_USERNAME=postgres \
-              --from-literal=DB_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
-              --from-literal=POSTGRES_DB=mydatabase \
-              -n orders-desk
-          else
-            echo "postgres-secret already exists"
-          fi
+      - name: Apply Kubernetes manifests via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        env:
+          IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.sha }}
+        with:
+          host: ${{ secrets.K3S_HOST }}
+          username: root
+          key: ${{ secrets.K3S_SSH_KEY }}
+          envs: IMAGE_TAG
+          script: |
+            echo "📦 Updating deployment with image: ${IMAGE_TAG}"
+            
+            # Update image in deployment manifest
+            sed -i "s|image: ghcr.io/arttkach-ua/order-desk:latest|image: ${IMAGE_TAG}|g" /tmp/orders-desk-deploy/k8s/app-deployment.yaml
+            
+            # Apply all manifests
+            echo "🔧 Applying Kubernetes manifests..."
+            sudo k3s kubectl apply -f /tmp/orders-desk-deploy/k8s/postgres-pvc.yaml
+            sudo k3s kubectl apply -f /tmp/orders-desk-deploy/k8s/postgres-deployment.yaml
+            sudo k3s kubectl apply -f /tmp/orders-desk-deploy/k8s/postgres-service.yaml
+            sudo k3s kubectl apply -f /tmp/orders-desk-deploy/k8s/app-configmap.yaml
+            sudo k3s kubectl apply -f /tmp/orders-desk-deploy/k8s/app-deployment.yaml
+            sudo k3s kubectl apply -f /tmp/orders-desk-deploy/k8s/app-service.yaml
+            
+            echo "⏳ Waiting for deployment to complete..."
+            sudo k3s kubectl rollout status deployment/orders-app -n orders-desk --timeout=5m
+            
+            echo "📊 Deployment status:"
+            sudo k3s kubectl get pods -n orders-desk
+            sudo k3s kubectl get svc -n orders-desk
+            
+            # Cleanup
+            rm -rf /tmp/orders-desk-deploy
+            
+            echo "✅ Deployment completed successfully!"
 
-      - name: Update deployment manifest with new image
-        run: |
-          # Replace the image placeholder with actual image
-          IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.sha }}"
-          sed -i "s|image: ghcr.io/arttkach-ua/order-desk:latest|image: ${IMAGE_TAG}|g" k8s/app-deployment.yaml
-          
-          echo "📦 Updated deployment to use image: ${IMAGE_TAG}"
-          
-          # Show the updated section
-          grep -A 5 "image:" k8s/app-deployment.yaml
-
-      - name: Apply Kubernetes manifests
-        run: |
-          echo "🚀 Applying Kubernetes manifests..."
-          
-          # Apply in correct order
-          kubectl apply -f k8s/namespace.yaml
-          kubectl apply -f k8s/postgres-pvc.yaml
-          kubectl apply -f k8s/postgres-deployment.yaml
-          kubectl apply -f k8s/postgres-service.yaml
-          kubectl apply -f k8s/app-configmap.yaml
-          kubectl apply -f k8s/app-deployment.yaml
-          kubectl apply -f k8s/app-service.yaml
-          
-          echo "✅ Manifests applied successfully"
-
-      - name: Wait for PostgreSQL to be ready
-        run: |
-          echo "⏳ Waiting for PostgreSQL to be ready..."
-          kubectl wait --for=condition=ready pod -l app=postgres -n orders-desk --timeout=300s || true
-          kubectl get pods -n orders-desk
-
-      - name: Wait for application deployment
-        run: |
-          echo "⏳ Waiting for application deployment to complete..."
-          kubectl rollout status deployment/orders-app -n orders-desk --timeout=300s
-          
-          echo "✅ Deployment completed successfully"
-
-      - name: Verify deployment
-        run: |
-          echo "🔍 Verifying deployment..."
-          echo ""
-          echo "📊 Pods Status:"
-          kubectl get pods -n orders-desk -o wide
-          echo ""
-          echo "🌐 Services:"
-          kubectl get svc -n orders-desk
-          echo ""
-          echo "📦 Deployments:"
-          kubectl get deployments -n orders-desk
-          echo ""
-          echo "🔖 Current Image Version:"
-          kubectl get deployment orders-app -n orders-desk -o jsonpath='{.spec.template.spec.containers[0].image}'
-          echo ""
-
-      - name: Get application URL
-        run: |
-          NODEPORT=$(kubectl get svc orders-service -n orders-desk -o jsonpath='{.spec.ports[0].nodePort}')
-          echo "🌍 Application is accessible at: http://${{ secrets.K3S_HOST }}:${NODEPORT}"
-          echo "📚 Swagger UI: http://${{ secrets.K3S_HOST }}:${NODEPORT}/swagger-ui.html"
+      - name: Get deployment info via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.K3S_HOST }}
+          username: root
+          key: ${{ secrets.K3S_SSH_KEY }}
+          script: |
+            echo "🔍 Verifying deployment..."
+            echo ""
+            echo "📊 Pods Status:"
+            sudo k3s kubectl get pods -n orders-desk -o wide
+            echo ""
+            echo "🌐 Services:"
+            sudo k3s kubectl get svc -n orders-desk
+            echo ""
+            NODEPORT=$(sudo k3s kubectl get svc orders-service -n orders-desk -o jsonpath='{.spec.ports[0].nodePort}')
+            echo "🌍 Application URL: http://${{ secrets.K3S_HOST }}:${NODEPORT}"
+            echo "📚 Swagger UI: http://${{ secrets.K3S_HOST }}:${NODEPORT}/swagger-ui.html"
 
       - name: Deployment summary
         run: |
@@ -233,12 +237,9 @@ jobs:
           echo "**Image:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.sha }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Access URLs:**" >> $GITHUB_STEP_SUMMARY
-          NODEPORT=$(kubectl get svc orders-service -n orders-desk -o jsonpath='{.spec.ports[0].nodePort}')
-          echo "- Application: http://${{ secrets.K3S_HOST }}:${NODEPORT}" >> $GITHUB_STEP_SUMMARY
-          echo "- Swagger UI: http://${{ secrets.K3S_HOST }}:${NODEPORT}/swagger-ui.html" >> $GITHUB_STEP_SUMMARY
+          echo "- Application: http://${{ secrets.K3S_HOST }}:30080" >> $GITHUB_STEP_SUMMARY
+          echo "- Swagger UI: http://${{ secrets.K3S_HOST }}:30080/swagger-ui.html" >> $GITHUB_STEP_SUMMARY
+          echo "- Health Check: http://${{ secrets.K3S_HOST }}:30080/actuator/health" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Pods Status:**" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          kubectl get pods -n orders-desk >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Deployment Status:** SUCCESS" >> $GITHUB_STEP_SUMMARY
 
