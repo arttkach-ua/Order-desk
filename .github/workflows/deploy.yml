@@ -38,8 +38,11 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Run tests
-        run: ./gradlew test
+      - name: Run tests with Testcontainers
+        run: ./gradlew test --info
+        env:
+          # Testcontainers uses Docker - GitHub Actions runners have Docker pre-installed
+          TESTCONTAINERS_RYUK_DISABLED: false
 
   build-and-deploy:
     name: Build Docker Image and Deploy
