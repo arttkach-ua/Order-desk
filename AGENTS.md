@@ -1,4 +1,4 @@
-# AGENTS.md - AI Agent Guide for Orders Desk 
+# AGENTS.md - AI Agent Guide for Orders Desk
 
 ## ⚠️ CRITICAL RULES - READ FIRST
 
