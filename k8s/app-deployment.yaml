@@ -19,6 +19,10 @@ spec:
     metadata:
       labels:
         app: orders-app
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
     spec:
       containers:
       - name: orders-app
@@ -28,6 +32,11 @@ spec:
         - containerPort: 8080
           name: http
         env:
+        - name: SPRING_APPLICATION_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SPRING_APPLICATION_NAME
         - name: SPRING_DATASOURCE_URL
           valueFrom:
             configMapKeyRef:
@@ -78,6 +87,16 @@ spec:
             configMapKeyRef:
               name: app-config
               key: SPRING_CACHE_CACHE_NAMES
+        - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+        - name: MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED
         resources:
           requests:
             memory: "512Mi"
