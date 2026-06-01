@@ -33,6 +33,7 @@ public class PriceTypeController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public List<PriceTypeDto> getAll() {
+        log.info("Get all price types called");
         return priceTypeService.getAll();
     }
 
