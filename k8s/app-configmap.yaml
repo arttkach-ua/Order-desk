@@ -7,6 +7,7 @@ metadata:
     app: orders-app
 data:
   SPRING_APPLICATION_NAME: "orders-desk"
+  SPRING_PROFILES_ACTIVE: "production"
   SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service:5432/mydatabase"
   SPRING_DATASOURCE_DRIVER_CLASS_NAME: "org.postgresql.Driver"
   SPRING_JPA_DATABASE_PLATFORM: "org.hibernate.dialect.PostgreSQLDialect"

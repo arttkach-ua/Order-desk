@@ -19,6 +19,8 @@ spec:
     metadata:
       labels:
         app: orders-app
+        version: v1
+        component: backend
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
@@ -32,6 +34,11 @@ spec:
         - containerPort: 8080
           name: http
         env:
+        - name: SPRING_PROFILES_ACTIVE
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SPRING_PROFILES_ACTIVE
         - name: SPRING_APPLICATION_NAME
           valueFrom:
             configMapKeyRef:
