@@ -2,15 +2,14 @@ package com.ta.orders.mappers.documents;
 
 import com.ta.orders.dto.order.OrderRequestDto;
 import com.ta.orders.dto.order.OrderResponseDto;
-import com.ta.orders.dto.order.raws.OrderProductsRowRequestDto;
+import com.ta.orders.dto.order.rows.OrderProductsRowRequestDto;
 import com.ta.orders.dto.ReferenceDto;
-import com.ta.orders.dto.order.raws.OrderProductsRowResponseDto;
+import com.ta.orders.dto.order.rows.OrderProductsRowResponseDto;
 import com.ta.orders.model.Customer;
 import com.ta.orders.model.PriceType;
 import com.ta.orders.model.documents.order.Order;
 import com.ta.orders.model.documents.order.OrderProductsRow;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -40,6 +39,7 @@ public class OrderMapper {
         return new OrderResponseDto(
                 entity.getId(),
                 entity.getDate(),
+                entity.getNumber(),
                 clientReference(entity.getClient()),
                 priceTypeReference(entity.getPriceType()),
                 entity.getSum(),

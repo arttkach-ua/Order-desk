@@ -23,8 +23,8 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "order_number")
-    private String orderNumber;
+    @Column(name = "number")
+    private Integer number;
 
     @Column(name = "date", nullable = false)
     private Instant date;
