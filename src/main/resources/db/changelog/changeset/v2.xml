@@ -190,5 +190,67 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="create table orders" author="artem.tkach">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="orders"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="orders">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="number" type="INTEGER"/>
+            <column name="date" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="client_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_orders_client"
+                             referencedTableName="customers"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="price_type_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_orders_price_type"
+                             referencedTableName="price_types"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="comments" type="text"/>
+            <column name="sum" type="decimal(19,2)"/>
+            <column name="created_by" type="bigint"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create table order_product_rows" author="artem.tkach">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="order_product_rows"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="order_product_rows">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="row_number" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_order_product_rows_order"
+                             referencedTableName="orders"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="product_id" type="bigint"/>
+            <column name="count" type="decimal(19,3)"/>
+            <column name="price" type="decimal(19,2)"/>
+            <column name="sum" type="decimal(19,2)"/>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
 
