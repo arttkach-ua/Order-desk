@@ -1,7 +1,8 @@
 package com.ta.orders.service.impl;
 
-import com.ta.orders.dto.order.OrderRequestDto;
-import com.ta.orders.dto.order.OrderResponseDto;
+import com.ta.orders.dto.documents.order.OrderListResponseDto;
+import com.ta.orders.dto.documents.order.OrderRequestDto;
+import com.ta.orders.dto.documents.order.OrderResponseDto;
 import com.ta.orders.mappers.documents.OrderMapper;
 import com.ta.orders.model.documents.order.Order;
 import com.ta.orders.repository.OrderRepository;
@@ -11,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import static java.util.Optional.ofNullable;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -29,5 +30,13 @@ public class OrderServiceImpl implements OrderService {
         Order saved = orderRepository.save(toSave);
 
         return orderMapper.toDto(saved);
+    }
+
+    @Override
+    public List<OrderListResponseDto> findAll() {
+        return orderRepository.findAll()
+                .stream()
+                .map(orderMapper::toListDto)
+                .toList();
     }
 }

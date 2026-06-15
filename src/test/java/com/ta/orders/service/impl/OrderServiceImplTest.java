@@ -1,8 +1,8 @@
 package com.ta.orders.service.impl;
 
 import com.ta.orders.dto.ReferenceDto;
-import com.ta.orders.dto.order.OrderRequestDto;
-import com.ta.orders.dto.order.OrderResponseDto;
+import com.ta.orders.dto.documents.order.OrderRequestDto;
+import com.ta.orders.dto.documents.order.OrderResponseDto;
 import com.ta.orders.mappers.documents.OrderMapper;
 import com.ta.orders.model.documents.order.Order;
 import com.ta.orders.repository.OrderRepository;

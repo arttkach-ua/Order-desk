@@ -1,7 +1,7 @@
-package com.ta.orders.dto.order;
+package com.ta.orders.dto.documents.order;
 
 import com.ta.orders.dto.ReferenceDto;
-import com.ta.orders.dto.order.rows.OrderProductsRowResponseDto;
+import com.ta.orders.dto.documents.order.rows.OrderProductsRowResponseDto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
