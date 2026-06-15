@@ -1,10 +1,11 @@
 package com.ta.orders.mappers.documents;
 
-import com.ta.orders.dto.order.OrderRequestDto;
-import com.ta.orders.dto.order.OrderResponseDto;
-import com.ta.orders.dto.order.rows.OrderProductsRowRequestDto;
+import com.ta.orders.dto.documents.order.OrderListResponseDto;
+import com.ta.orders.dto.documents.order.OrderRequestDto;
+import com.ta.orders.dto.documents.order.OrderResponseDto;
+import com.ta.orders.dto.documents.order.rows.OrderProductsRowRequestDto;
 import com.ta.orders.dto.ReferenceDto;
-import com.ta.orders.dto.order.rows.OrderProductsRowResponseDto;
+import com.ta.orders.dto.documents.order.rows.OrderProductsRowResponseDto;
 import com.ta.orders.model.Customer;
 import com.ta.orders.model.PriceType;
 import com.ta.orders.model.documents.order.Order;
@@ -21,7 +22,6 @@ public class OrderMapper {
 
     private final OrderProductsRowMapper rowMapper;
     private final EntityManager entityManager;
-
 
     public Order toEntity(OrderRequestDto dto) {
         Order order = Order.builder()
@@ -45,6 +45,18 @@ public class OrderMapper {
                 entity.getSum(),
                 entity.getComments(),
                 getResponseRows(entity.getProducts())
+        );
+    }
+
+    public OrderListResponseDto toListDto(Order entity) {
+        return new OrderListResponseDto(
+                entity.getId(),
+                entity.getDate(),
+                entity.getNumber(),
+                clientReference(entity.getClient()),
+                priceTypeReference(entity.getPriceType()),
+                entity.getSum(),
+                entity.getComments()
         );
     }
 

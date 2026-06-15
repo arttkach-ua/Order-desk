@@ -1,6 +1,6 @@
-package com.ta.orders.dto.order;
+package com.ta.orders.dto.documents.order;
 
-import com.ta.orders.dto.order.rows.OrderProductsRowRequestDto;
+import com.ta.orders.dto.documents.order.rows.OrderProductsRowRequestDto;
 
 import java.math.BigDecimal;
 import java.time.Instant;

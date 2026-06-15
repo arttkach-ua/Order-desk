@@ -1,7 +1,7 @@
 package com.ta.orders.mappers.documents;
 
-import com.ta.orders.dto.order.rows.OrderProductsRowRequestDto;
-import com.ta.orders.dto.order.rows.OrderProductsRowResponseDto;
+import com.ta.orders.dto.documents.order.rows.OrderProductsRowRequestDto;
+import com.ta.orders.dto.documents.order.rows.OrderProductsRowResponseDto;
 import com.ta.orders.model.Product;
 import com.ta.orders.model.documents.order.OrderProductsRow;
 import jakarta.persistence.EntityManager;

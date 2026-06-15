@@ -1,4 +1,4 @@
-package com.ta.orders.dto.order.rows;
+package com.ta.orders.dto.documents.order.rows;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

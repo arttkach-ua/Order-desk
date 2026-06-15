@@ -1,10 +1,13 @@
-package com.ta.orders.controller;
+package com.ta.orders.controller.documents;
 
-import com.ta.orders.dto.order.OrderRequestDto;
-import com.ta.orders.dto.order.OrderResponseDto;
+import com.ta.orders.dto.documents.order.OrderListResponseDto;
+import com.ta.orders.dto.documents.order.OrderRequestDto;
+import com.ta.orders.dto.documents.order.OrderResponseDto;
 import com.ta.orders.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin
@@ -17,5 +20,10 @@ public class OrderController {
     @PostMapping
     OrderResponseDto create(@RequestBody OrderRequestDto order) {
         return orderService.create(order);
+    }
+
+    @GetMapping
+    List<OrderListResponseDto> getAll() {
+        return orderService.findAll();
     }
 }
